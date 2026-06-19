@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sahte Haber Tespit Sistemi</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ═══ HEADER ═══════════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-emoji">🔍</span>
+        <span class="logo-text">Sahte Haber Tespiti</span>
+      </div>
+      <p class="header-sub">Türkçe haber ve tweet metinlerini yapay zeka ile analiz edin</p>
+    </div>
+  </header>
+
+  <!-- ═══ TAB NAVİGASYONU ══════════════════════════════════════════════════ -->
+  <nav class="tab-nav">
+    <div class="tab-nav-inner">
+      <button class="tab-btn active" onclick="switchTab('analiz', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Analiz
+      </button>
+      <button class="tab-btn" onclick="switchTab('karsilastir', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/></svg>
+        Karşılaştır
+      </button>
+      <button class="tab-btn" onclick="switchTab('hakkinda', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Hakkında
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ SEKMELERİN İÇERİĞİ ══════════════════════════════════════════════ -->
+
+  <!-- ── ANALİZ SEKMESİ ────────────────────────────────────────────────── -->
+  <div id="tab-analiz" class="tab-content active">
+    <div class="main-grid">
+
+      <!-- Sol: Form -->
+      <section class="card input-card">
+        <div class="card-header">
+          <div class="card-icon blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">Metin Girişi</h2>
+            <p class="card-desc">Analiz edilecek haber veya tweet metnini yapıştırın</p>
+          </div>
+        </div>
+
+        <textarea
+          id="newsText"
+          class="text-input"
+          rows="9"
+          placeholder="Türkçe haber metnini buraya yapıştırın…"
+          maxlength="5000"
+        ></textarea>
+
+        <div class="input-footer">
+          <span id="charCount" class="char-count">0 / 5000</span>
+          <span class="kbd-hint">Ctrl + Enter ile analiz et</span>
+        </div>
+
+        <div class="model-section">
+          <label class="section-label">Model Seçimi</label>
+          <div class="model-grid">
+            <label class="model-radio active" id="radio-svm">
+              <input type="radio" name="model" value="svm" checked onchange="updateModelRadio(this)"/>
+              <div class="model-radio-inner">
+                <span class="model-radio-name">SVM</span>
+                <span class="model-radio-acc">%82.5</span>
+                <span class="model-radio-badge recommended">En İyi</span>
+              </div>
+            </label>
+            <label class="model-radio" id="radio-nb">
+              <input type="radio" name="model" value="nb" onchange="updateModelRadio(this)"/>
+              <div class="model-radio-inner">
+                <span class="model-radio-name">Naive Bayes</span>
+                <span class="model-radio-acc">%82.5</span>
+                <span class="model-radio-badge recommended">En İyi</span>
+              </div>
+            </label>
+            <label class="model-radio" id="radio-lr">
+              <input type="radio" name="model" value="lr" onchange="updateModelRadio(this)"/>
+              <div class="model-radio-inner">
+                <span class="model-radio-name">Lojistik Reg.</span>
+                <span class="model-radio-acc">%81.8</span>
+              </div>
+            </label>
+            <label class="model-radio" id="radio-rf">
+              <input type="radio" name="model" value="rf" onchange="updateModelRadio(this)"/>
+              <div class="model-radio-inner">
+                <span class="model-radio-name">Random Forest</span>
+                <span class="model-radio-acc">%80.7</span>
+              </div>
+            </label>
+            <label class="model-radio" id="radio-bilstm">
+              <input type="radio" name="model" value="bilstm" onchange="updateModelRadio(this)"/>
+              <div class="model-radio-inner">
+                <span class="model-radio-name">BiLSTM</span>
+                <span class="model-radio-acc">%81.2</span>
+                <span class="model-radio-badge faz2">Derin Öğrenme</span>
+              </div>
+            </label>
+            <label class="model-radio" id="radio-berturk">
+              <input type="radio" name="model" value="berturk" onchange="updateModelRadio(this)"/>
+              <div class="model-radio-inner">
+                <span class="model-radio-name">BerTURK</span>
+                <span class="model-radio-acc">%88.1</span>
+                <span class="model-radio-badge faz2">Transformer</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button id="analyzeBtn" class="btn-analyze" onclick="analyze()">
+          <svg id="btnSvg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span id="btnText">Analiz Et</span>
+        </button>
+      </section>
+
+      <!-- Sağ: Sonuç -->
+      <section class="card result-card" id="resultCard">
+
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".3">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <p class="empty-title">Sonuç bekleniyor</p>
+          <p class="empty-sub">Bir metin girin ve Analiz Et'e basın</p>
+        </div>
+
+        <div class="loading-state hidden" id="loadingState">
+          <div class="spinner-ring"><div></div><div></div><div></div><div></div></div>
+          <p class="loading-text">Analiz ediliyor…</p>
+        </div>
+
+        <div class="result-state hidden" id="resultState">
+
+          <div class="verdict-banner" id="verdictBanner">
+            <div class="verdict-icon-wrap" id="verdictIcon"></div>
+            <div class="verdict-text">
+              <div class="verdict-label" id="verdictLabel"></div>
+              <div class="verdict-sub" id="verdictSub"></div>
+            </div>
+            <div class="verdict-model-badge" id="verdictModelBadge"></div>
+          </div>
+
+          <div class="prob-bars">
+            <div class="prob-row">
+              <span class="prob-label real">Gerçek Haber</span>
+              <div class="prob-track">
+                <div class="prob-fill real" id="probReal"></div>
+              </div>
+              <span class="prob-pct" id="probRealPct"></span>
+            </div>
+            <div class="prob-row">
+              <span class="prob-label fake">Sahte Haber</span>
+              <div class="prob-track">
+                <div class="prob-fill fake" id="probFake"></div>
+              </div>
+              <span class="prob-pct" id="probFakePct"></span>
+            </div>
+          </div>
+
+          <div class="section-divider">
+            <span>İşlenmiş Metin</span>
+          </div>
+          <p class="processed-text" id="processedText"></p>
+
+          <div class="section-divider">
+            <span>Öznitelik Analizi</span>
+          </div>
+          <div class="feat-grid" id="featGrid"></div>
+
+          <div class="latency-row" id="latencyRow"></div>
+
+        </div>
+
+        <div class="error-state hidden" id="errorState">
+          <div class="error-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <p id="errorMsg" class="error-msg"></p>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Performans Özeti -->
+    <section class="perf-section">
+      <h2 class="section-heading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+        Model Performans Özeti
+      </h2>
+      <div class="perf-grid">
+        <div class="perf-card highlight">
+          <div class="perf-top">
+            <span class="perf-name">SVM</span>
+            <span class="perf-badge best">En İyi</span>
+          </div>
+          <div class="perf-acc">82.5<span class="perf-unit">%</span></div>
+          <div class="perf-bars-mini">
+            <div class="mini-bar-row"><span>F1</span><div class="mini-track"><div class="mini-fill" style="width:82.5%"></div></div><span>0.825</span></div>
+            <div class="mini-bar-row"><span>AUC</span><div class="mini-track"><div class="mini-fill" style="width:91%"></div></div><span>0.91</span></div>
+          </div>
+          <div class="perf-tag">Faz 1 · Dengeli</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-top"><span class="perf-name">Naive Bayes</span></div>
+          <div class="perf-acc">82.5<span class="perf-unit">%</span></div>
+          <div class="perf-bars-mini">
+            <div class="mini-bar-row"><span>F1</span><div class="mini-track"><div class="mini-fill" style="width:82.5%"></div></div><span>0.825</span></div>
+            <div class="mini-bar-row"><span>AUC</span><div class="mini-track"><div class="mini-fill" style="width:91%"></div></div><span>0.91</span></div>
+          </div>
+          <div class="perf-tag">Faz 1 · Dengeli</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-top"><span class="perf-name">Lojistik Reg.</span></div>
+          <div class="perf-acc">81.8<span class="perf-unit">%</span></div>
+          <div class="perf-bars-mini">
+            <div class="mini-bar-row"><span>F1</span><div class="mini-track"><div class="mini-fill" style="width:81.8%"></div></div><span>0.818</span></div>
+            <div class="mini-bar-row"><span>AUC</span><div class="mini-track"><div class="mini-fill" style="width:90%"></div></div><span>0.90</span></div>
+          </div>
+          <div class="perf-tag">Faz 1 · Dengeli</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-top"><span class="perf-name">Random Forest</span></div>
+          <div class="perf-acc">80.7<span class="perf-unit">%</span></div>
+          <div class="perf-bars-mini">
+            <div class="mini-bar-row"><span>F1</span><div class="mini-track"><div class="mini-fill" style="width:80.7%"></div></div><span>0.807</span></div>
+            <div class="mini-bar-row"><span>AUC</span><div class="mini-track"><div class="mini-fill" style="width:89%"></div></div><span>0.89</span></div>
+          </div>
+          <div class="perf-tag">Faz 1 · Dengeli</div>
+        </div>
+        <div class="perf-card faz2" id="bilstm-card">
+          <div class="perf-top"><span class="perf-name">BiLSTM</span><span class="perf-badge faz2-badge">Derin Öğrenme</span></div>
+          <div class="perf-acc faz2-acc" id="bilstm-acc">—</div>
+          <div class="perf-tag" id="bilstm-detail" style="margin-top:8px">faz2_bilstm.ipynb çalıştırılmadı</div>
+        </div>
+        <div class="perf-card faz2">
+          <div class="perf-top"><span class="perf-name">BerTURK</span><span class="perf-badge faz2-badge">Transformer</span></div>
+          <div class="perf-acc faz2-acc">88.1<span class="perf-unit">%</span></div>
+          <div class="perf-bars-mini">
+            <div class="mini-bar-row"><span>F1</span><div class="mini-track"><div class="mini-fill" style="width:88.1%;background:var(--purple)"></div></div><span>—</span></div>
+          </div>
+          <div class="perf-tag">Faz 2 · Fine-Tuned</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── KARŞILAŞTIR SEKMESİ ────────────────────────────────────────────── -->
+  <div id="tab-karsilastir" class="tab-content">
+    <div class="compare-wrapper">
+      <div class="card compare-input-card">
+        <div class="card-header">
+          <div class="card-icon purple">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/></svg>
+          </div>
+          <div>
+            <h2 class="card-title">Model Karşılaştırması</h2>
+            <p class="card-desc">Aynı metin için tüm modellerin tahminlerini karşılaştırın</p>
+          </div>
+        </div>
+        <textarea id="compareText" class="text-input" rows="5" placeholder="Karşılaştırılacak metni buraya girin…" maxlength="5000"></textarea>
+        <button class="btn-analyze" style="margin-top:14px" onclick="compareAll()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/></svg>
+          <span id="compareBtnText">Tüm Modellerle Karşılaştır</span>
+        </button>
+      </div>
+
+      <div id="compareResults" class="compare-results hidden">
+        <h3 class="section-heading" style="margin-bottom:16px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Karşılaştırma Sonuçları
+        </h3>
+        <div class="compare-grid" id="compareGrid"></div>
+        <div class="compare-summary card" id="compareSummary"></div>
+      </div>
+
+      <div class="compare-loading hidden" id="compareLoading">
+        <div class="spinner-ring"><div></div><div></div><div></div><div></div></div>
+        <p>Tüm modeller analiz ediliyor…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HAKKINDA SEKMESİ ───────────────────────────────────────────────── -->
+  <div id="tab-hakkinda" class="tab-content">
+    <div class="about-wrapper">
+
+      <div class="about-hero card">
+        <div class="about-hero-icon">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="about-title">Sahte Haber Tespit Sistemi</h2>
+          <p class="about-desc">
+            Bu sistem, Türkçe sosyal medya içeriklerinde (tweet ve haber metinleri) 
+            dezenformasyonu yapay zeka ile tespit etmek amacıyla geliştirilmiştir.
+            Klasik makine öğrenmesi ve derin öğrenme modellerini karşılaştırmalı olarak sunar.
+          </p>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <div class="card about-card">
+          <div class="about-card-icon blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </div>
+          <h3 class="about-card-title">Veri Seti</h3>
+          <ul class="about-list">
+            <li><span class="about-list-dot fake"></span><strong>13.447</strong> sahte haber (tweet)</li>
+            <li><span class="about-list-dot real"></span><strong>17.452</strong> gerçek haber</li>
+            <li><span class="about-list-dot neutral"></span>X Community Notes</li>
+            <li><span class="about-list-dot neutral"></span>DMM Türkiye</li>
+            <li><span class="about-list-dot neutral"></span>Doğruluk Payı</li>
+            <li><span class="about-list-dot neutral"></span>Harici akademik veri setleri</li>
+          </ul>
+        </div>
+
+        <div class="card about-card">
+          <div class="about-card-icon green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <h3 class="about-card-title">Ön İşleme</h3>
+          <ul class="about-list">
+            <li><span class="about-list-dot blue"></span>URL ve mention temizleme</li>
+            <li><span class="about-list-dot blue"></span>Türkçe büyük/küçük harf normaliz.</li>
+            <li><span class="about-list-dot blue"></span>Emoji ve özel karakter kaldırma</li>
+            <li><span class="about-list-dot blue"></span>Türkçe stop-word eleme</li>
+            <li><span class="about-list-dot blue"></span>Yinelenen kayıt tespiti</li>
+            <li><span class="about-list-dot blue"></span>TF-IDF (50K öznitelik, bigram)</li>
+          </ul>
+        </div>
+
+        <div class="card about-card">
+          <div class="about-card-icon orange">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3 class="about-card-title">Modeller</h3>
+          <ul class="about-list">
+            <li><span class="about-list-dot blue"></span>Naive Bayes <em>(Faz 1)</em></li>
+            <li><span class="about-list-dot blue"></span>Lojistik Regresyon <em>(Faz 1)</em></li>
+            <li><span class="about-list-dot blue"></span>Random Forest <em>(Faz 1)</em></li>
+            <li><span class="about-list-dot blue"></span>SVM / LinearSVC <em>(Faz 1)</em></li>
+            <li><span class="about-list-dot purple"></span>BiLSTM — PyTorch <em>(Faz 2)</em></li>
+            <li><span class="about-list-dot purple"></span>BerTURK Transformer <em>(Faz 2)</em></li>
+          </ul>
+        </div>
+
+        <div class="card about-card">
+          <div class="about-card-icon purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3 class="about-card-title">Değerlendirme</h3>
+          <ul class="about-list">
+            <li><span class="about-list-dot blue"></span>5-Fold Çapraz Doğrulama</li>
+            <li><span class="about-list-dot blue"></span>Dengeli / Dengesiz senaryo</li>
+            <li><span class="about-list-dot blue"></span>ROC-AUC eğrileri</li>
+            <li><span class="about-list-dot blue"></span>Karmaşıklık matrisi</li>
+            <li><span class="about-list-dot blue"></span>Öğrenme eğrileri</li>
+            <li><span class="about-list-dot blue"></span>Precision / Recall / F1</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card about-table-card">
+        <h3 class="about-card-title" style="margin-bottom:16px">Performans Karşılaştırma Tablosu</h3>
+        <div class="table-wrap">
+          <table class="perf-table">
+            <thead>
+              <tr><th>Model</th><th>Faz</th><th>Doğruluk</th><th>F1</th><th>Kesinlik</th><th>AUC</th></tr>
+            </thead>
+            <tbody>
+              <tr class="best-row"><td><strong>SVM</strong></td><td>Faz 1</td><td>%82.5</td><td>0.825</td><td>0.825</td><td>0.91</td></tr>
+              <tr><td>Naive Bayes</td><td>Faz 1</td><td>%82.5</td><td>0.825</td><td>0.826</td><td>0.91</td></tr>
+              <tr><td>Lojistik Reg.</td><td>Faz 1</td><td>%81.8</td><td>0.818</td><td>0.818</td><td>0.90</td></tr>
+              <tr><td>Random Forest</td><td>Faz 1</td><td>%80.7</td><td>0.807</td><td>0.807</td><td>0.89</td></tr>
+              <tr class="faz2-row"><td>BiLSTM</td><td>Faz 2</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+              <tr class="faz2-row"><td><strong>BerTURK</strong></td><td>Faz 2</td><td>%88.1</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">* Faz 2 modelleri için ilgili Jupyter Notebook'ları çalıştırılmalıdır.</p>
+      </div>
+
+      <div class="card about-info-card">
+        <div class="about-info-row">
+          <div class="about-info-item">
+            <span class="about-info-label">Geliştirici</span>
+            <span class="about-info-val">Batuhan DÜZGÜN · 2210656034</span>
+          </div>
+          <div class="about-info-item">
+            <span class="about-info-label">Danışman</span>
+            <span class="about-info-val">Prof. Dr. Erdinç UZUN</span>
+          </div>
+          <div class="about-info-item">
+            <span class="about-info-label">Kurum</span>
+            <span class="about-info-val">Tekirdağ Namık Kemal Üniversitesi</span>
+          </div>
+          <div class="about-info-item">
+            <span class="about-info-label">Tarih</span>
+            <span class="about-info-val">Haziran 2026</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <p>Tekirdağ Namık Kemal Üniversitesi · Çorlu Mühendislik Fakültesi · Batuhan DÜZGÜN · 2210656034</p>
+    <p>Danışman: Prof. Dr. Erdinç UZUN · Haziran 2026</p>
+  </footer>
+
+  <!-- ═══ SCRIPT ════════════════════════════════════════════════════════════ -->
+  <script>
+
+    /* ── Tab Switching ─────────────────────────────────── */
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    /* ── Model Radio ───────────────────────────────────── */
+    function updateModelRadio(radio) {
+      document.querySelectorAll('.model-radio').forEach(el => el.classList.remove('active'));
+      radio.closest('.model-radio').classList.add('active');
+    }
+
+    /* ── Char count ────────────────────────────────────── */
+    const textarea = document.getElementById("newsText");
+    textarea.addEventListener("input", () => {
+      document.getElementById("charCount").textContent = `${textarea.value.length} / 5000`;
+    });
+
+    /* ── State helper ──────────────────────────────────── */
+    function setState(visible) {
+      ['emptyState','loadingState','resultState','errorState'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== visible);
+      });
+    }
+
+    /* ── Analyze ───────────────────────────────────────── */
+    async function analyze() {
+      const text  = textarea.value.trim();
+      const model = document.querySelector('input[name="model"]:checked').value;
+      if (!text) { showError("Lütfen analiz edilecek bir metin girin."); return; }
+
+      const btn = document.getElementById("analyzeBtn");
+      btn.disabled = true;
+      document.getElementById("btnText").textContent = "Analiz Ediliyor…";
+      setState("loadingState");
+
+      try {
+        const res  = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, model }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || "Sunucu hatası."); return; }
+        renderResult(data);
+      } catch {
+        showError("Sunucuya bağlanılamadı. app.py'nin çalıştığından emin olun.");
+      } finally {
+        btn.disabled = false;
+        document.getElementById("btnText").textContent = "Analiz Et";
+      }
+    }
+
+    /* ── Render Result ─────────────────────────────────── */
+    function renderResult(data) {
+      const banner = document.getElementById("verdictBanner");
+      const icon   = document.getElementById("verdictIcon");
+      const label  = document.getElementById("verdictLabel");
+      const sub    = document.getElementById("verdictSub");
+      const badge  = document.getElementById("verdictModelBadge");
+
+      if (data.is_fake) {
+        banner.className = "verdict-banner fake";
+        icon.innerHTML   = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+        label.textContent = "SAHTE HABER";
+        sub.textContent   = "Bu metin dezenformasyon belirtileri taşıyor";
+      } else {
+        banner.className = "verdict-banner real";
+        icon.innerHTML   = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>`;
+        label.textContent = "GERÇEK HABER";
+        sub.textContent   = "Bu metin güvenilir kaynaklara benzer özellikler taşıyor";
+      }
+      badge.textContent = data.model_used;
+
+      const conf = Math.round(data.confidence * 100);
+      const realPct = data.is_fake ? (100 - conf) : conf;
+      const fakePct = data.is_fake ? conf : (100 - conf);
+
+      document.getElementById("probReal").style.width = realPct + "%";
+      document.getElementById("probFake").style.width = fakePct + "%";
+      document.getElementById("probRealPct").textContent = "%" + realPct;
+      document.getElementById("probFakePct").textContent = "%" + fakePct;
+
+      document.getElementById("processedText").textContent = data.cleaned_text || data.processed_text || "—";
+
+      const f = data.features;
+      const items = [
+        { icon: "📝", label: "Kelime Sayısı",     val: f.word_count },
+        { icon: "📊", label: "Cümle Sayısı",      val: f.sentence_count },
+        { icon: "🔤", label: "Ort. Kelime Uz.",   val: (+f.avg_word_length).toFixed(1) },
+        { icon: "✨", label: "Benzersiz Kelime",  val: "%" + Math.round(f.unique_words_ratio * 100) },
+        { icon: "%",  label: "Noktalama Oranı",   val: "%" + (f.punctuation_ratio * 100).toFixed(1) },
+        { icon: "🔢", label: "Karakter Sayısı",   val: f.text_length },
+      ];
+      document.getElementById("featGrid").innerHTML = items.map(i =>
+        `<div class="feat-card">
+          <span class="feat-icon">${i.icon}</span>
+          <span class="feat-label">${i.label}</span>
+          <span class="feat-value">${i.val}</span>
+        </div>`
+      ).join("");
+
+      document.getElementById("latencyRow").innerHTML =
+        `<span class="lat-pill">🧹 ${data.clean_ms} ms</span>` +
+        `<span class="lat-pill">⚡ ${data.infer_ms} ms</span>` +
+        `<span class="lat-pill">⏱ Toplam: ${data.latency_ms} ms</span>`;
+
+      setState("resultState");
+    }
+
+    function showError(msg) {
+      document.getElementById("errorMsg").textContent = msg;
+      setState("errorState");
+    }
+
+    textarea.addEventListener("keydown", e => { if (e.ctrlKey && e.key === "Enter") analyze(); });
+
+    /* ── Compare All ───────────────────────────────────── */
+    const MODEL_LIST = [
+      { key: "svm",    name: "SVM",           phase: "Faz 1" },
+      { key: "nb",     name: "Naive Bayes",   phase: "Faz 1" },
+      { key: "lr",     name: "Lojistik Reg.", phase: "Faz 1" },
+      { key: "rf",     name: "Random Forest", phase: "Faz 1" },
+      { key: "bilstm",   name: "BiLSTM",   phase: "Faz 2" },
+      { key: "berturk",  name: "BerTURK",  phase: "Faz 2" },
+    ];
+
+    async function compareAll() {
+      const text = document.getElementById("compareText").value.trim();
+      if (!text) { alert("Lütfen bir metin girin."); return; }
+
+      document.getElementById("compareResults").classList.add("hidden");
+      document.getElementById("compareLoading").classList.remove("hidden");
+      document.getElementById("compareBtnText").textContent = "Analiz ediliyor…";
+
+      const results = await Promise.all(MODEL_LIST.map(async m => {
+        try {
+          const res  = await fetch("/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, model: m.key }),
+          });
+          const data = await res.json();
+          if (res.status === 503) return { ...m, ok: false, notLoaded: true };
+          return { ...m, ...data, ok: res.ok };
+        } catch { return { ...m, ok: false }; }
+      }));
+
+      document.getElementById("compareLoading").classList.add("hidden");
+      document.getElementById("compareBtnText").textContent = "Tüm Modellerle Karşılaştır";
+
+      renderCompare(results);
+    }
+
+    function renderCompare(results) {
+      const grid = document.getElementById("compareGrid");
+      grid.innerHTML = results.map(r => {
+        const phaseCls = r.phase === "Faz 2" ? "faz2" : "";
+        // Model yüklenmemişse (503) özel kart
+        if (r.notLoaded) {
+          return `<div class="compare-card not-loaded ${phaseCls}">
+            <div class="compare-card-header">
+              <span class="compare-model-name">${r.name}</span>
+              <span class="compare-phase-badge ${phaseCls}">${r.phase}</span>
+            </div>
+            <div class="compare-not-loaded-msg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Model yüklenmedi
+            </div>
+            <p class="compare-not-loaded-hint">Notebook'u çalıştırıp modeli kaydedin</p>
+          </div>`;
+        }
+        if (!r.ok) {
+          return `<div class="compare-card error ${phaseCls}">
+            <div class="compare-card-header">
+              <span class="compare-model-name">${r.name}</span>
+              <span class="compare-phase-badge ${phaseCls}">${r.phase}</span>
+            </div>
+            <p class="compare-err">Bağlantı hatası</p>
+          </div>`;
+        }
+        const conf = Math.round(r.confidence * 100);
+        const cls  = r.is_fake ? "fake" : "real";
+        return `<div class="compare-card ${cls} ${phaseCls}">
+          <div class="compare-card-header">
+            <span class="compare-model-name">${r.name}</span>
+            <span class="compare-phase-badge ${phaseCls}">${r.phase}</span>
+          </div>
+          <div class="compare-verdict-row">
+            <span class="compare-verdict ${cls}">${r.is_fake ? "SAHTE" : "GERÇEK"}</span>
+            <span class="compare-conf">%${conf}</span>
+          </div>
+          <div class="compare-bar-track">
+            <div class="compare-bar-fill ${cls}" style="width:${conf}%"></div>
+          </div>
+        </div>`;
+      }).join("");
+
+      const voted   = results.filter(r => r.ok && !r.notLoaded);
+      const fakeCount = voted.filter(r => r.is_fake).length;
+      const realCount = voted.filter(r => !r.is_fake).length;
+      const total     = voted.length;
+      const verdict   = fakeCount > realCount ? "SAHTE" : (realCount > fakeCount ? "GERÇEK" : "KARARSIZ");
+      const cls       = verdict === "SAHTE" ? "fake" : (verdict === "GERÇEK" ? "real" : "");
+      const skipped   = results.length - total;
+      const skipNote  = skipped > 0 ? ` · ${skipped} model yüklenmedi` : "";
+
+      document.getElementById("compareSummary").innerHTML =
+        `<div class="compare-summary-inner">
+          <span class="compare-summary-label">Çoğunluk Kararı (${total} model):</span>
+          <span class="compare-summary-verdict ${cls}">${verdict}</span>
+          <span class="compare-summary-detail">${fakeCount} sahte · ${realCount} gerçek${skipNote}</span>
+        </div>`;
+
+      document.getElementById("compareResults").classList.remove("hidden");
+    }
+
+    /* ── BiLSTM health check ───────────────────────────── */
+    fetch("/health").then(r => r.json()).then(data => {
+      if (data.loaded_models && data.loaded_models.includes("bilstm")) {
+        document.getElementById("bilstm-acc").textContent    = "Yüklendi ✓";
+        document.getElementById("bilstm-detail").textContent = "Model aktif";
+      }
+    }).catch(() => {});
+
+  </script>
+</body>
+</html>

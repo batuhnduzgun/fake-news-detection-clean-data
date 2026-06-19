@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Büyük model dosyaları (GitHub 100MB limiti var)
+models/rf_pipeline.joblib
+models/berturk/model.safetensors
+models/berturk/pytorch_model.bin
+models/bilstm_model.pt
+
+# Veri dosyaları (büyük olabilir)
+data/real-news.txt
+data/fake-news.txt
+data/real-news-features.json
+data/fake-news-features.json
+
+# Ham veri — büyük dosyalar
+raw-data/real/merged_output.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Ortam
+.env
+.venv
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
